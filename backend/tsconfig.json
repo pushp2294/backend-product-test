@@ -1,0 +1,17 @@
+{
+  // Used for type-checking everything (src + test). Emits nothing; see tsconfig.build.json for the build.
+  "compilerOptions": {
+    "target": "ES2022",
+    // NodeNext + package.json without "type": "module" = CommonJS output, so imports need no ".js" suffix.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}
