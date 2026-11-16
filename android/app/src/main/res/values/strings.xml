@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">My Products</string>
+
+    <!-- Static UI labels live here (translatable). Error messages are the exception:
+         they come from ui/common/ErrorMessages.kt, see DECISIONS.md. -->
+    <string name="home_title">My Products</string>
+    <string name="home_featured">Top rated</string>
+    <string name="home_categories">Shop by category</string>
+    <string name="product_title">Product details</string>
+    <string name="product_enquire">Enquire</string>
+    <string name="search_title">Search</string>
+    <string name="action_retry">Try again</string>
+    <string name="action_back">Back</string>
+    <string name="loading">Loading</string>
+    <string name="rating_format">★ %1$.1f (%2$d)</string>
+    <string name="rating_content_description">Rated %1$.1f out of 5 from %2$d ratings</string>
 </resources>
