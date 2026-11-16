@@ -1,0 +1,16 @@
+# --- Secrets: only .env.example is committed ---
+.env
+.env.*
+!.env.example
+
+# --- Node / backend ---
+node_modules/
+dist/
+coverage/
+*.log
+
+# --- OS / editors ---
+.DS_Store
+.vscode/
+
+# Android ignores live in android/.gitignore
