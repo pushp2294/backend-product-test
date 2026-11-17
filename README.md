@@ -9,6 +9,11 @@ never calls it.
 - How AI was used, and where it was wrong: [AI_USAGE.md](AI_USAGE.md)
 - The plan agreed before coding: [docs/PLAN.md](docs/PLAN.md)
 
+> [!IMPORTANT]
+> **In Android Studio, open the `android/` folder, not the repo root.** The repo root holds
+> both apps (`android/` and `backend/`) and is not a Gradle project, so opening it fails with
+> *"Directory '…/MyProducts' does not contain a Gradle build."*
+
 > **If the Fake Store API is slow or unreachable, run with `PRODUCT_SOURCE=snapshot` to serve a dated local snapshot.**
 
 ## Stack, and why
@@ -41,8 +46,13 @@ curl localhost:3000/api/v1/health            # {"status":"ok"}
 | `PRODUCT_CACHE_TTL_MS` | `60000` | how long product data is cached |
 
 ### 2. Android app
-Open the **`android/`** folder (not the repo root) in Android Studio and run the app.
-Android Studio finds the SDK and JDK by itself.
+In Android Studio: **File → Open → choose the `android/` folder** (the one containing
+`settings.gradle.kts`), wait for Gradle sync, then run the app. Android Studio finds the SDK
+and JDK by itself.
+
+> [!WARNING]
+> If sync fails with *"Directory '…/MyProducts' does not contain a Gradle build"*, you opened
+> the repo root. Close the project (File → Close Project) and open `android/` instead.
 
 - **Emulator:** works as-is. The app calls `http://10.0.2.2:3000/api/v1/`, which is how the
   emulator reaches your machine's `localhost`.
