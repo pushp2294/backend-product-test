@@ -8,7 +8,6 @@ was caught. I reviewed every change and can explain every line.
 - **Claude Code** (Anthropic's command-line coding agent) with **Claude Opus 5.5**
   (`claude-opus-5-5`): planning, code, tests, documentation, git, and driving the Android
   build, the phone (adb) and the backend from the terminal.
-- `TODO (author): list any other AI tools you used, e.g. for reading the brief, or delete this line.`
 
 ## 2. Agent instruction files
 

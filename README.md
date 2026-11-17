@@ -15,8 +15,8 @@ never calls it.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Client | **Android: Kotlin, Jetpack Compose**, ViewModel + StateFlow, Hilt, Retrofit/OkHttp, Coil | `TODO (author): your reason, e.g. it is your strongest platform.` Compose keeps the whole look and feel in one theme (`Tokens.kt`), which the brief says will change. |
-| Backend | **Node 20 + TypeScript**: Express 5, Zod, Vitest | The brief prefers TypeScript. Zod validates both incoming requests and Fake Store's responses at runtime. It runs with npm alone, with no database or Docker needed. `TODO (author): add your own reason, or confirm.` |
+| Client | **Android: Kotlin, Jetpack Compose**, ViewModel + StateFlow, Hilt, Retrofit/OkHttp, Coil | Kotlin and Compose are the platform I know best, so I can defend every line of the client, and the brief allows a mobile client. Compose keeps the whole look and feel in one theme (`Tokens.kt`), which the brief says will change. |
+| Backend | **Node 20 + TypeScript**: Express 5, Zod, Vitest | The brief prefers TypeScript. Zod validates both incoming requests and Fake Store's responses at runtime. It runs with npm alone, with no database or Docker needed. I have less Node experience than Android experience, so the agent rules in `CLAUDE.md` require a comment explaining *why* above every non-obvious backend construct. |
 
 ## Run it locally
 
@@ -85,12 +85,10 @@ android/app/src/main/java/com/example/myproducts/
 
 ## Time spent
 
-`TODO (author): fill in your actual time. The brief asks for an honest total, roughly split.`
-
-| Activity | Time |
-|---|---|
-| Planning | TODO |
-| Building | TODO |
-| Testing | TODO |
-| Reviewing | TODO |
-| **Total** | **TODO** (the brief's time-box was 2–3 hours) |
+| Activity | Time     |
+|---|----------|
+| Planning | 30 mins  |
+| Building | 2 hours  |
+| Testing | 30 mins  |
+| Reviewing | 30 mins  |
+| **Total** | **3 h 30 min** (about 30 minutes over the 2–3 hour time-box) |
