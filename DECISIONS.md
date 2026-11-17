@@ -73,7 +73,7 @@ agreed before any code was written is [docs/PLAN.md](docs/PLAN.md).
 | **No rate limiting or captcha on enquiries** | Not in the criteria. Validation and a 10 kB body limit only. |
 | **No pagination** | 20 products. Every response is a JSON object, not a bare array, so pagination can be added without breaking clients. |
 | **Search runs in memory over the full list, with no relevance ranking** | Fine at 20 products; see "next day". |
-| **No UI (instrumentation) tests** | ViewModels are unit-tested with a fake repository, which covers the behaviour; screens were checked by hand on a Pixel 9. |
+| **No UI (instrumentation) tests** | ViewModels are unit-tested with a fake repository, which covers the behaviour. Every flow was checked by hand on a Pixel 9 (Android 17) against the live backend: home, category, search (including no results), product detail, enquiry validation, a sent enquiry arriving as an `.eml`, and an email failure keeping the customer on the form. |
 | **Error messages aren't translatable** | They live in a Kotlin mapper so ViewModel tests need no Android Context. The production answer is string resources, with the mapper returning resource ids. |
 | **The stale cache can't help a cold start or a product nobody opened yet** | `PRODUCT_SOURCE=snapshot` covers that: it serves a dated local copy of the catalogue. |
 | **SMTP sending was not tested against a real mail server** | It is tested end to end over real SMTP against a small fake server written for the tests. |
@@ -131,8 +131,10 @@ described.
 
 ## 4. What I would do next with another day
 
-1. **Test steps C and D on a device** (Category, Search, Enquiry), and add Compose UI tests
-   for the critical path.
+1. **Compose UI tests** for the critical path, automating the flows that were checked by hand
+   on a device. Also mark the enquiry fields as contact details for Android autofill: on a real
+   phone, Google Password Manager offered to "save a password" after an enquiry, because
+   autofill guessed a name + email form was a login.
 2. **Image proxy** (`/images/:id`) or a CDN, so images work wherever the backend works.
 3. **Enquiries:** store them, send through a queue with retries (and return 202), add rate
    limiting, and put one overall deadline on an SMTP send.
