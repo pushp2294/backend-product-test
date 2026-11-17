@@ -18,7 +18,17 @@ Enquiry emails are written to `backend/data/enquiries/*.eml` by default
 (`EMAIL_TRANSPORT=file`). Every setting is documented in `.env.example`.
 
 ## Android
-Open the `android/` folder in Android Studio, start the backend first, then run the app.
+Open the `android/` folder (not the repo root) in Android Studio, start the backend first,
+then run the app. Android Studio finds the SDK and JDK by itself.
+
+From the command line, Gradle needs to know where the Android SDK and a JDK (17+) are.
+On macOS with a default Android Studio install:
+```sh
+export ANDROID_HOME=~/Library/Android/sdk
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"   # Studio's bundled JDK
+```
+(Opening `android/` in Android Studio once also works: it writes `local.properties`.)
+
 - **Emulator:** works as-is (the app calls `http://10.0.2.2:3000/api/v1/`).
 - **Physical phone over USB:**
   ```sh

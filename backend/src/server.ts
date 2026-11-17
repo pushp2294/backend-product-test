@@ -19,6 +19,7 @@ try {
       process.exit(1);
     }
     logger.info(`Backend listening on http://localhost:${config.port}/api/v1`, {
+      productSource: config.productSource,
       emailTransport: config.email.transport,
       productCacheTtlMs: config.productCacheTtlMs,
       featuredProductIds: config.featuredProductIds ?? 'top-rated rule',
