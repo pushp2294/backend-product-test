@@ -8,7 +8,14 @@
     <string name="home_categories">Shop by category</string>
     <string name="product_title">Product details</string>
     <string name="product_enquire">Enquire</string>
+    <string name="category_top_rated">Top rated in %1$s</string>
+    <string name="category_others">More in %1$s</string>
+    <string name="category_title_loading">Category</string>
     <string name="search_title">Search</string>
+    <string name="search_field_label">Search products</string>
+    <string name="search_button">Search</string>
+    <string name="search_prompt">Enter a word to search product titles and descriptions.</string>
+    <string name="search_no_results">No products match “%1$s”.</string>
     <string name="action_retry">Try again</string>
     <string name="action_back">Back</string>
     <string name="loading">Loading</string>
