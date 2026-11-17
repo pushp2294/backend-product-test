@@ -168,6 +168,10 @@ described.
   automatically, so routes have no try/catch.
 - **Node's built-in `--env-file`** loads `.env`, replacing the dotenv package.
 - **Exact dependency versions** (no `^`), so a reviewer installs exactly what was tested.
+- **Vitest 4.1.12, not 5.** Vitest 3 carried two critical advisories (in its mocking and
+  worker-pool code; development-only, the running server was never affected). Vitest 5
+  requires Node 22.12+, and this project supports Node 20, so the fix is the newest 4.x.
+  `npm audit` is clean for all dependencies, development tools included.
 
 ### Fake Store adapter
 - **5-second timeout** on every upstream call; a hung upstream becomes a 502, never a hung

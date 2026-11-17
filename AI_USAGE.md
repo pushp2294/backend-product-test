@@ -136,4 +136,12 @@ in `DECISIONS.md` rather than in `git log`.
 - **A toolchain mismatch.** The AI first picked the KSP version that matches the template's
   Kotlin version; it fails under AGP 9, which compiles Kotlin itself. Caught by building
   straight away; the current KSP version works.
+- **"0 vulnerabilities", checked too narrowly.** The AI repeatedly reported a clean
+  `npm audit`, but it was running `npm audit --omit=dev`, which checks only production
+  dependencies. When I ran a plain `npm install`, npm reported two critical advisories in
+  Vitest, the test runner. The AI's first fix attempt was also wrong: it ran the upgrade
+  with `--silent`, which hid that the install had failed, and the tests "passed" on the old
+  version. It caught that because `package.json` still showed the old version. The real
+  fix (Vitest 4.1.12) needed a newer npm, because npm 10 crashes resolving Vitest 4's
+  dependencies. It was then verified that a reviewer's npm 10 installs the result cleanly.
 
