@@ -28,7 +28,7 @@ The three things expected to change, and the single seam each sits behind:
 | Expected to change | Seam | Current implementation |
 |---|---|---|
 | Product data source | `ProductSource` port (backend) | `FakeStoreProductSource`, wrapped by `CachingProductSource` |
-| Email provider | `EmailSender` port (backend) | `SmtpEmailSender` → Mailpit locally (SES speaks SMTP) |
+| Email provider | `EmailSender` port (backend) | `FileEmailSender` (default, writes `.eml`) and `SmtpEmailSender` (Mailpit locally; SES speaks SMTP), chosen by `EMAIL_TRANSPORT` |
 | Look and feel | Compose theme + `Tokens.kt` (client) | Placeholder tokens until creative work lands |
 
 ---
@@ -39,10 +39,9 @@ The three things expected to change, and the single seam each sits behind:
 /
 ├── README.md  DECISIONS.md  AI_USAGE.md  CLAUDE.md
 ├── docs/PLAN.md                  # this file
-├── docker-compose.yml            # backend + mailpit (local "sales inbox")
 ├── .env.example
 ├── backend/
-│   ├── Dockerfile  package.json  tsconfig.json  vitest.config.ts
+│   ├── package.json  tsconfig.json  vitest.config.ts
 │   ├── src/
 │   │   ├── server.ts             # entrypoint: load config, build app, listen
 │   │   ├── app.ts                # composition root: the ONLY place adapters are chosen and wired
@@ -54,8 +53,8 @@ The three things expected to change, and the single seam each sits behind:
 │   │   │   └── errors.ts         # NotFoundError, UpstreamError, EmailError
 │   │   ├── ports/
 │   │   │   ├── ProductSource.ts  # listProducts(), getProduct(id), listCategories()
-│   │   │   ├── EmailSender.ts    # send({ to, replyTo, subject, text })
-│   │   │   └── Logger.ts         # one interface, one method: warn(). Console impl; injected so tests can assert
+│   │   │   ├── EmailSender.ts    # send({ to, from, replyTo, subject, text })
+│   │   │   └── Logger.ts         # info() + warn() only; every log goes through it. Injected so tests can assert
 │   │   ├── adapters/
 │   │   │   ├── fakestore/
 │   │   │   │   ├── FakeStoreProductSource.ts   # implements ProductSource
@@ -63,7 +62,8 @@ The three things expected to change, and the single seam each sits behind:
 │   │   │   ├── caching/
 │   │   │   │   └── CachingProductSource.ts     # decorator: implements ProductSource, wraps another
 │   │   │   └── email/
-│   │   │       └── SmtpEmailSender.ts          # implements EmailSender
+│   │   │       ├── FileEmailSender.ts          # default: writes backend/data/enquiries/*.eml + logs a line
+│   │   │       └── SmtpEmailSender.ts          # EMAIL_TRANSPORT=smtp: nodemailer → Mailpit locally
 │   │   └── http/
 │   │       ├── routes.ts         # thin: validate → call domain → map to response
 │   │       ├── schemas.ts        # Zod request schemas + domain→response mappers
@@ -145,7 +145,7 @@ Store price has more than 2 decimal places, so `Math.round(price * 100)` is exac
 | 2b | `GET /categories/:categoryId/products` | path `categoryId` | `{ "category": Category, "topRated": [ProductSummary × 2], "others": [ProductSummary] }` |
 | 3 | `GET /search?q=...` | `q` required, 1–100 chars after trim | `{ "query": string, "products": [ProductSummary] }` |
 | 4 | `GET /products/:id` | path `id` | `{ "product": ProductDetail }` |
-| 5 | `POST /enquiries` | JSON body below | `{ "status": "sent" }` |
+| 5 | `POST /enquiries` | JSON body below | **200** (not 201) `{ "status": "sent" }`. The client treats any 2xx as success |
 | — | `GET /health` | — | `{ "status": "ok" }` (compose healthcheck only) |
 
 Enquiry request:
@@ -178,6 +178,7 @@ details sent by the client. The "Thank you" copy is client-owned.
 |---|---|---|
 | 400 | `VALIDATION_ERROR` | Bad query/body/malformed JSON. `details` present only here |
 | 404 | `NOT_FOUND` | Unknown product, category, or route |
+| 413 | `PAYLOAD_TOO_LARGE` | JSON body over 10kb (added in step 2) |
 | 502 | `UPSTREAM_UNAVAILABLE` | Product source failed or timed out. Message never names Fake Store |
 | 502 | `EMAIL_FAILED` | Email provider rejected or unreachable. Client shows an error, not "Thank you" |
 | 500 | `INTERNAL_ERROR` | Anything else. Generic message; detail logged server-side only |
@@ -243,7 +244,13 @@ cannot tell the source changed.
   never `from`. Recipient is `SALES_INBOX_EMAIL`, sender is `EMAIL_FROM`, both from env.
 - Sent synchronously; `200 { "status": "sent" }` only after the provider accepts.
   (Would become `202` if we moved to a queue.)
-- Sales inbox locally = **Mailpit** container; reviewer views mail at `localhost:8025`.
+- Sales inbox locally, two live adapters behind `EmailSender`, chosen in `app.ts` by
+  `EMAIL_TRANSPORT`:
+  - `file` (default): `FileEmailSender` writes each email to `backend/data/enquiries/*.eml`
+    and logs a line. No dependencies, no Docker.
+  - `smtp`: `SmtpEmailSender` (nodemailer) to Mailpit; reviewer views mail at `localhost:8025`.
+  Two working adapters behind one port is evidence the seam works; a commented-out
+  class would only be a claim. (Revised 2026-11-17: Docker is not on the happy path.)
   No signup, no internet. Production path: SES via SMTP = config change.
 - Abuse: validation + JSON body size limit now. Rate limiting is next-day work.
 
@@ -256,6 +263,15 @@ cannot tell the source changed.
   backend. Cost ~20 minutes, which we chose to spend elsewhere.
 - When the source changes, that URL becomes S3/CloudFront and nothing else moves.
 - Recorded in DECISIONS.md as a tension, not a silent choice.
+
+### Running locally (revised 2026-11-17)
+- Documented happy path: `cp .env.example .env`, then `cd backend && npm install && npm run dev`.
+  No Docker required. The brief suggests compose for web clients; we are mobile, and
+  npm already meets the one-or-two-commands bar faster than an image pull.
+- No Dockerfile or compose file (revised 2026-11-17): Docker was never available to run
+  one, and unverified run instructions are not shipped. See DECISIONS.md.
+- Dependency versions are pinned exactly (`.npmrc` `save-exact=true`), so the reviewer
+  installs what was tested.
 
 ### Resilience: caching decorator
 - `CachingProductSource implements ProductSource` and wraps any other `ProductSource`.
@@ -317,6 +333,14 @@ cannot tell the source changed.
 - Inner source error is not cached; the next call retries.
 - Different arguments (e.g. `getProduct("1")` vs `getProduct("2")`) are cached separately.
 
+### Backend — email adapters
+- `FileEmailSender` writes one `.eml` into a temp directory with To, From, Reply-To,
+  Subject and the body text.
+- Config: `EMAIL_TRANSPORT` accepts only `file` | `smtp`, defaults to `file`; `smtp`
+  without `SMTP_HOST` fails at startup.
+- `SmtpEmailSender` is not unit-tested against a real server; it is verified manually
+  against Mailpit on the optional compose path (recorded honestly in DECISIONS.md).
+
 ### Backend — routes (`routes.test.ts`, supertest, fakes injected)
 - `GET /products/featured` → 200, 5 products, response shape.
 - `GET /categories` → 200, list.
@@ -349,8 +373,8 @@ cannot tell the source changed.
 | 0 | `git init`; move Android template into `/android`; root `.gitignore`; initial commit on `main`; create feature branch; `.env.example`; empty `backend/` scaffold | 10 |
 | 1 | Backend: domain types, ports, Fake Store adapter + Zod + fixture, catalogue rules incl. curated featured, **caching decorator**, domain/adapter/cache tests | 40 |
 | 2 | HTTP: routes 1–4 + categories, error handler, route tests | 20 |
-| 3 | Enquiry: EmailSender, SMTP adapter, Mailpit in compose, route, tests | 20 |
-| 4 | `docker compose up` end to end, verified with curl | 10 |
+| 3 | Enquiry: EmailSender, File + SMTP adapters, transport switch in `app.ts`, route, tests | 20 |
+| 4 | `npm install && npm run dev` end to end with curl (happy path); compose file as optional path, verified once Docker is available | 10 |
 | 5 | Android: Hilt, Retrofit, repository, theme tokens (minimal), Home + Product detail | 25 |
 | 6 | Android: Category + Search | 15 |
 | 7 | Android: Enquiry form + thank-you state | 15 |
@@ -369,7 +393,7 @@ total is ~3.5h; any overrun will be reported, not hidden.
 2. Multi-term search → simple case-insensitive phrase substring.
 3. Client-side form validation (rely on server field errors, which the UI shows anyway).
 4. Visual polish beyond the token file (skeletons, empty-state art).
-5. Backend container (run with `npm start`, keep Mailpit in compose). Last resort.
+5. The optional compose path (Dockerfile + compose). The npm happy path does not depend on it.
 
 **Never cut:** the ports, the cache decorator, the error shape, the route tests, the docs.
 
