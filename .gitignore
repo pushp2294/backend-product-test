@@ -8,9 +8,13 @@ node_modules/
 dist/
 coverage/
 *.log
+# File-transport enquiry emails (local output, never committed)
+backend/data/
 
 # --- OS / editors ---
 .DS_Store
 .vscode/
+# IDE project settings, at any depth (repo root and android/): machine-specific, never committed.
+.idea/
 
 # Android ignores live in android/.gitignore
