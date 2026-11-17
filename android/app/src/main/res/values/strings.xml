@@ -16,6 +16,16 @@
     <string name="search_button">Search</string>
     <string name="search_prompt">Enter a word to search product titles and descriptions.</string>
     <string name="search_no_results">No products match “%1$s”.</string>
+    <string name="enquiry_title">Enquire</string>
+    <string name="enquiry_about">Enquiry about %1$s</string>
+    <string name="enquiry_name">Name</string>
+    <string name="enquiry_email">Email</string>
+    <string name="enquiry_phone">Phone (optional)</string>
+    <string name="enquiry_message">Message (optional)</string>
+    <string name="enquiry_submit">Send enquiry</string>
+    <string name="enquiry_thanks_title">Thank you</string>
+    <string name="enquiry_thanks_body">Your enquiry has been sent to our sales team. They will reply to %1$s.</string>
+    <string name="enquiry_back_to_product">Back to product</string>
     <string name="action_retry">Try again</string>
     <string name="action_back">Back</string>
     <string name="loading">Loading</string>
